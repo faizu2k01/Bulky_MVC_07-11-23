@@ -1,0 +1,57 @@
+﻿@model Category
+
+
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-secondary bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="text-primary">
+                    Create Category
+                </h1>
+
+            </div>
+
+        </div>
+       
+
+    </div>
+    <div class="card-body p-4">
+        <form method="post" class="row">
+            <div class="border p-4">
+
+                <div class="text-danger class="m-0 p-0" asp-validation-summary="All"></div>
+                <div class="form-floating py-2 col-12">
+                    <input asp-for="Name" class="form-control border-0 shadow" type="text" />
+                    <label asp-for="Name" class="ms-2"></label>
+                    <span class="text-danger mt-2" asp-validation-for="Name"></span>
+                </div>
+                <div class="form-floating py-2 col-12">
+                    <input asp-for="DisplayName" type="text" class="form-control border-0 shadow" />
+                    <label asp-for="DisplayName" class="ms-2"></label>
+                    <span class="text-danger mt-2" asp-validation-for="DisplayName"></span>
+                </div>
+                <div class="mt-4 p-0 row">
+                    <div class="col-6 col-md-3">
+                        <button class="btn btn-primary form-control" type="submit">Create</button>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a class="btn btn-outline-primary form-control" asp-controller="Category" asp-action="Index">Go Back</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+</div>
+
+    
+
+
+    @section Scripts{
+        @{
+            <partial name="_ValidationScriptsPartial"/>
+        }
+    }
+

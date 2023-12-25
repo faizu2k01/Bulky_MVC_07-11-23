@@ -1,0 +1,77 @@
+﻿@model List<Category>
+
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-secondary bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="text-primary">
+                    Category List
+                </h1>
+
+            </div>
+
+        </div>
+       
+
+    </div>
+    <div class="card-body p-4">
+        <div class="row pb-3 pt-4">
+            
+            <div class="col-12 text-end pb-2">
+                <a asp-area="Admin" asp-action="Create" asp-controller="Category" class="btn btn-primary"><i class="bi bi-droplet-half"></i> Create new Category</a>
+
+            </div>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>
+                            Category name
+                        </th>
+                        <th>
+                            Display order
+                        </th>
+                        <th>
+
+                        </th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.OrderByDescending(m => m.DisplayName))
+                    {
+                        <tr>
+                            <td>
+                                @item.Name
+                            </td>
+                            <td>
+                                @item.DisplayName
+                            </td>
+                            <td>
+                                <div class="btn-group w-75" role="group">
+
+                                    <a class="btn btn-primary mx-4" asp-area="Admin" asp-controller="Category" asp-action="Edit" asp-route-Id="@item.CategoryId">
+                                        <i class="bi bi-pencil"></i>Edit
+                                    </a>
+                                    <a class="btn btn-danger mx-4" asp-area="Admin" asp-controller="Category" asp-action="Delete" asp-route-Id="@item.CategoryId">
+                                        <i class="bi bi-trash2"></i>Delete
+                                    </a>
+
+                                </div>
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="container">
+  
+
+</div>

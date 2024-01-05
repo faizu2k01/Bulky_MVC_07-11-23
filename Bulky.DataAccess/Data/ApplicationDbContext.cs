@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Bulky.DataAccess.Data
 {
@@ -14,8 +15,12 @@ namespace Bulky.DataAccess.Data
 
        public DbSet<Category> Categories { get; set; }
        public DbSet<Product> Products { get; set; }
-
-
+       public DbSet<Company> Companies { get; set; }
+       
+       public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+       public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+       public DbSet<OrderHeader> OrderHeaders { get; set; }
+       public DbSet<OrderDetail> OrderDetails { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -41,6 +46,30 @@ namespace Bulky.DataAccess.Data
 
                 }
                 );
+
+
+            modelBuilder.Entity<Company>().HasData(
+               new Company
+               {
+                   Id = 1,
+                   Name = "Blue stone",
+                   StreetAddress = "Purani bajar shahganj",
+                   PostalCode="89789",
+                   PhoneNumber=87974844,
+                   City="Shahganj",
+                   State="UP"
+               },
+             new Company
+             {
+                 Id = 2,
+                 Name = "Brown stone",
+                 StreetAddress = "Purani bajar shahganj",
+                 PostalCode = "89789",
+                 PhoneNumber = 87974844,
+                 City = "Shahganj",
+                 State = "UP"
+             }
+               );
 
 
             modelBuilder.Entity<Product>().HasData(

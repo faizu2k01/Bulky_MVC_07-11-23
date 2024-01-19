@@ -18,9 +18,11 @@ namespace Bulky.Utilities
         public const string StatusInProcess = "Processing";
         public const string StatusShipped = "Shipped";
         public const string StatusRefunded = "Refunded";
+        public const string StatusCancelled = "Cancelled";
         public const string PaymentStatusPending = "Pending";
         public const string PaymentStatusApproved = "Approved";
         public const string PaymentStatusDelayedPayment = "ApprovedForDelyedPayment";
         public const string PaymentStatusRejected = "Rejected";
+        public const string ShoppingCartItemsCount = "ShoppingCartItemsCount";
     }
 }

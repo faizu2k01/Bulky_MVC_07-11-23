@@ -5,6 +5,7 @@ using Bulky.Modals.ViewModels;
 using Bulky.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Stripe.Checkout;
 using System.Security.Claims;
 
 namespace BulkyWeb.Areas.Customer.Controllers
@@ -134,14 +135,67 @@ namespace BulkyWeb.Areas.Customer.Controllers
             }
 
             if(applicationUser.CompanyId.GetValueOrDefault() == 0)
-            {
+            { var domain = "https://localhost:7035/";
+                var options = new SessionCreateOptions
+                {
+                    SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={shoppingCartVM.OrderHeader.Id}",
+                    CancelUrl = domain + "customer/cart/Index",
+					LineItems = new List<SessionLineItemOptions>(),
+					Mode = "payment",
+				};
 
-            }
+                foreach(var item in shoppingCartVM.ShoppingCartList)
+                {
+                    options.LineItems.Add(new SessionLineItemOptions
+                    {
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            UnitAmount = (long)(item.Price * 100),
+                            Currency = "usd",
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = item.Products.Title
+                            }
+                        },
+                        Quantity = item.Count
+                        
+                    }) ;
+                }
+
+
+
+				var service = new SessionService();
+				var session = service.Create(options);
+                _unitOfWork.OrderHeader.UpdateStripePaymentId(shoppingCartVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
+                _unitOfWork.Save();
+                Response.Headers.Add("Location", session.Url);
+                return new StatusCodeResult(303);
+
+			}
 			return RedirectToAction(nameof(OrderConfirmation),new {id=shoppingCartVM.OrderHeader.Id});
 		}
 
         public IActionResult OrderConfirmation(int id)
         {
+            var orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == id, "ApplicationUser");
+            if(orderHeader.PaymentStatus != SD.PaymentStatusDelayedPayment)
+            {
+                var service = new SessionService();
+                var session = service.Get(orderHeader.SessionId);
+                if(session.PaymentStatus.ToLower() == "paid")
+                {
+                    _unitOfWork.OrderHeader.UpdateStripePaymentId(id, session.Id, session.PaymentIntentId);
+                    _unitOfWork.OrderHeader.UpdateStatus(id, SD.StatusApproved, SD.PaymentStatusApproved);
+                    _unitOfWork.Save();
+                }
+
+                var shoppingCart = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == orderHeader.ApplicationUserId);
+                _unitOfWork.ShoppingCart.RemoveRange(shoppingCart);
+                _unitOfWork.Save();
+            }
+
+
+
             return View(id);
         }
 
@@ -162,15 +216,18 @@ namespace BulkyWeb.Areas.Customer.Controllers
             if(cart.Count <= 1)
             {
                 _unitOfWork.ShoppingCart.Remove(cart);
-
+                _unitOfWork.Save();
+                HttpContext.Session.SetInt32(SD.ShoppingCartItemsCount,
+               _unitOfWork.ShoppingCart.GetAll(x => x.ApplicationUserId == cart.ApplicationUserId).Count());
             }
             else
             {
                 cart.Count -= 1;
                 _unitOfWork.ShoppingCart.Update(cart);
+                _unitOfWork.Save();
 
             }
-            _unitOfWork.Save();
+            
             return RedirectToAction(nameof(Index));
 
         }
@@ -179,8 +236,13 @@ namespace BulkyWeb.Areas.Customer.Controllers
         {
             var cart = _unitOfWork.ShoppingCart.Get(x => x.Id == cartId);
             
-                _unitOfWork.ShoppingCart.Remove(cart);
+            _unitOfWork.ShoppingCart.Remove(cart);
             _unitOfWork.Save();
+       
+                HttpContext.Session.SetInt32(SD.ShoppingCartItemsCount,
+               _unitOfWork.ShoppingCart.GetAll(x => x.ApplicationUserId == cart.ApplicationUserId).Count());
+            
+
             return RedirectToAction(nameof(Index));
         }
 

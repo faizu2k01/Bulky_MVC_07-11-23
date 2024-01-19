@@ -1,6 +1,9 @@
 ﻿using Bulky.DataAccess.RepositoryContainer.IRepositories;
 using Bulky.Modals;
+using Bulky.Modals.ViewModels;
+using Bulky.Utilities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -20,6 +23,14 @@ namespace BulkyWeb.Areas.Customer.Controllers
 
         public IActionResult Index()
         {
+            var claimIdentifier = (ClaimsIdentity)User.Identity;
+            var userId = claimIdentifier.FindFirst(ClaimTypes.NameIdentifier);
+
+            if(userId != null)
+            {
+                 HttpContext.Session.SetInt32(SD.ShoppingCartItemsCount,
+                _unitOfWork.ShoppingCart.GetAll(x => x.ApplicationUserId == userId.Value).Count());
+            }
 
             var productList = _unitOfWork.Product.GetAll(IncludeProps: "Category");
             return View(productList);
@@ -52,14 +63,16 @@ namespace BulkyWeb.Areas.Customer.Controllers
             {
                 productExi.Count += shoppingCart.Count;
                 _unitOfWork.ShoppingCart.Update(productExi);
-
+                _unitOfWork.Save();
             }
             else
             {
                 _unitOfWork.ShoppingCart.Add(shoppingCart);
+                _unitOfWork.Save();
+                HttpContext.Session.SetInt32(SD.ShoppingCartItemsCount, _unitOfWork.ShoppingCart.GetAll(x => x.ApplicationUserId == shoppingCart.ApplicationUserId).Count());
             }
 
-            _unitOfWork.Save();
+            
             TempData["Success"] = "Cart added successfully";
             return RedirectToAction(nameof(Index));
         }

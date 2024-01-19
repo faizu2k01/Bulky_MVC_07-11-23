@@ -8,5 +8,7 @@ namespace Bulky.DataAccess.RepositoryContainer.IRepositories
     {
         void Save();
         void Update(OrderHeader item);
+        void UpdateStatus(int id, string orderStatus, string? paymentStatus = null);
+        void UpdateStripePaymentId(int id, string sessionId, string paymentIntentId);
     }
 }
